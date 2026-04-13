@@ -3,6 +3,10 @@ name: Server health check
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   ping-and-report:
     runs-on: ubuntu-latest
