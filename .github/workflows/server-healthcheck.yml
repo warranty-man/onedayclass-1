@@ -21,7 +21,7 @@ jobs:
           fi
 
       - name: Create issue on failure
-        if: steps.ping.outputs.ok != 'true'
+        if: ${{ steps.ping.outputs.ok == 'false' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
