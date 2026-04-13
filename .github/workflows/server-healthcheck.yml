@@ -14,7 +14,7 @@ jobs:
       - name: Ping server
         id: ping
         run: |
-          if ping -c 1 -W 5 101.79.9.203; then
+          if ping -c 1 -W 10 101.79.9.203; then
             echo "ok=true" >> "$GITHUB_OUTPUT"
           else
             echo "ok=false" >> "$GITHUB_OUTPUT"
