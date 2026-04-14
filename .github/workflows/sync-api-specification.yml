@@ -1,0 +1,50 @@
+name: Sync API specification
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-api-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download, normalize, and open PR if changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          curl -fsSL "https://warranty-man.com/v3/api-docs" -o /tmp/api-docs-fetched.json
+          jq -S . /tmp/api-docs-fetched.json > /tmp/api-docs-normalized.json
+
+          if [ -f api-docs.json ]; then
+            jq -S . api-docs.json > /tmp/api-docs-repo-sorted.json
+          else
+            printf '%s\n' '{}' > /tmp/api-docs-repo-sorted.json
+          fi
+
+          if diff -q /tmp/api-docs-normalized.json /tmp/api-docs-repo-sorted.json >/dev/null 2>&1; then
+            echo "api-docs.json과 동일합니다. 종료합니다."
+            exit 0
+          fi
+
+          cp /tmp/api-docs-normalized.json api-docs.json
+
+          BRANCH="chore/sync-api-docs-${{ github.run_id }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add api-docs.json
+          git commit -m "chore: OpenAPI 명세 동기화 (warranty-man.com/v3/api-docs)"
+          git push origin "$BRANCH"
+
+          gh pr create \
+            --repo "${{ github.repository }}" \
+            --base "${{ github.ref_name }}" \
+            --head "$BRANCH" \
+            --title "chore: OpenAPI 명세 동기화" \
+            --body "$(printf '%s\n\n%s' '원본: https://warranty-man.com/v3/api-docs' 'api-docs.json을 jq -S(키 정렬)로 정규화한 뒤 저장소와 동기화합니다.')"
