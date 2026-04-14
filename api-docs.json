@@ -1,1716 +1,1715 @@
 {
-    "openapi": "3.1.0",
-    "info": {
-      "title": "WM Blog API",
-      "description": "개인 블로그 서비스 API 문서입니다. 공개 조회 API와 인증이 필요한 글/댓글/회원 관리 API를 포함합니다.",
-      "contact": {
-        "name": "WM Blog",
-        "url": "http://101.79.9.203"
-      },
-      "license": {
-        "name": "Internal Use"
-      },
-      "version": "1.0.0"
-    },
-    "servers": [
-      {
-        "url": "/",
-        "description": "Current origin"
-      }
-    ],
-    "tags": [
-      {
-        "name": "Visitors",
-        "description": "방문자 집계 API"
-      },
-      {
-        "name": "Admin Users",
-        "description": "관리자 전용 일반 회원 관리 API"
-      },
-      {
-        "name": "Articles",
-        "description": "블로그 글 조회, 검색, 작성, 수정, 삭제 API"
-      },
-      {
-        "name": "Auth",
-        "description": "회원 가입, 로그인, 토큰 갱신 API"
-      },
-      {
-        "name": "Comments",
-        "description": "댓글 조회, 작성, 수정, 삭제 API"
-      },
-      {
-        "name": "User",
-        "description": "로그인한 사용자의 내 정보 관리 API"
-      }
-    ],
-    "paths": {
-      "/api/visitors/track": {
-        "post": {
-          "tags": [
-            "Visitors"
-          ],
-          "summary": "방문자 집계 반영",
-          "description": "현재 요청의 IP와 User-Agent를 기준으로 오늘 방문자를 집계하고, 오늘/누적 방문자 수를 반환합니다.",
-          "operationId": "trackVisit",
-          "responses": {
-            "200": {
-              "description": "집계 성공",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/VisitorStatsResponse"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/users/me": {
-        "post": {
-          "tags": [
-            "User"
-          ],
-          "summary": "내 정보 수정",
-          "description": "로그인한 사용자의 이메일과 닉네임을 수정합니다. 비밀번호 변경은 관리자 기능으로만 처리합니다.",
-          "operationId": "updateMyProfile",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UpdateMyProfileRequest"
-                }
-              }
-            },
-            "required": true
+  "components": {
+    "schemas": {
+      "AddArticleRequest": {
+        "description": "새 글 작성 요청",
+        "properties": {
+          "content": {
+            "description": "글 본문",
+            "example": "의존성을 추가하고 OpenAPI 설정 클래스를 등록한 뒤 컨트롤러에 문서를 작성합니다.",
+            "type": "string"
           },
-          "responses": {
-            "200": {
-              "description": "수정 성공",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/UserProfileResponse"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "입력값 오류",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "로그인 필요",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            }
+          "summary": {
+            "description": "글 요약. 비워둘 수 있는 선택 입력값입니다.",
+            "example": "springdoc-openapi를 적용해 Swagger UI를 노출하는 방법을 정리합니다.",
+            "type": "string"
           },
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ]
-        },
-        "delete": {
-          "tags": [
-            "User"
-          ],
-          "summary": "회원 탈퇴",
-          "description": "로그인한 사용자 계정과 본인이 작성한 글, 댓글, 세션을 모두 삭제합니다.",
-          "operationId": "deleteMyProfile",
-          "responses": {
-            "204": {
-              "description": "회원 탈퇴 성공"
-            },
-            "401": {
-              "description": "로그인 필요",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            }
-          },
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ]
-        }
-      },
-      "/api/comments/{id}": {
-        "post": {
-          "tags": [
-            "Comments"
-          ],
-          "summary": "댓글 수정",
-          "description": "관리자는 모든 댓글을, 일반 사용자는 본인이 작성한 댓글만 수정할 수 있습니다.",
-          "operationId": "updateComment",
-          "parameters": [
-            {
-              "name": "id",
-              "in": "path",
-              "description": "수정할 댓글 ID",
-              "required": true,
-              "schema": {
-                "type": "integer",
-                "format": "int64"
-              },
-              "example": 5
-            }
-          ],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UpdateCommentRequest"
-                }
-              }
-            },
-            "required": true
-          },
-          "responses": {
-            "200": {
-              "description": "수정 성공",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/CommentResponse"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "입력값 오류",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "로그인 필요",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "403": {
-              "description": "권한 없음",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "댓글 없음",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            }
-          },
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ]
-        },
-        "delete": {
-          "tags": [
-            "Comments"
-          ],
-          "summary": "댓글 삭제",
-          "description": "관리자는 모든 댓글을, 일반 사용자는 본인이 작성한 댓글만 삭제할 수 있습니다.",
-          "operationId": "deleteComment",
-          "parameters": [
-            {
-              "name": "id",
-              "in": "path",
-              "description": "삭제할 댓글 ID",
-              "required": true,
-              "schema": {
-                "type": "integer",
-                "format": "int64"
-              },
-              "example": 5
-            }
-          ],
-          "responses": {
-            "204": {
-              "description": "삭제 성공"
-            },
-            "401": {
-              "description": "로그인 필요",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "403": {
-              "description": "권한 없음",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "댓글 없음",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            }
-          },
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ]
-        }
-      },
-      "/api/auth/register": {
-        "post": {
-          "tags": [
-            "Auth"
-          ],
-          "summary": "회원 가입",
-          "description": "아이디, 이메일, 비밀번호, 닉네임으로 계정을 만들고 JWT access/refresh 토큰을 발급합니다.",
-          "operationId": "register",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RegisterRequest"
-                }
-              }
-            },
-            "required": true
-          },
-          "responses": {
-            "200": {
-              "description": "회원 가입 성공",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/AuthResponse"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "입력값 오류 또는 중복 계정",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/auth/refresh": {
-        "post": {
-          "tags": [
-            "Auth"
-          ],
-          "summary": "토큰 갱신",
-          "description": "Refresh Token으로 새 access/refresh 토큰 쌍을 재발급합니다.",
-          "operationId": "refresh",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RefreshTokenRequest"
-                }
-              }
-            },
-            "required": true
-          },
-          "responses": {
-            "200": {
-              "description": "토큰 재발급 성공",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/AuthResponse"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "유효하지 않은 Refresh Token",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/auth/logout": {
-        "post": {
-          "tags": [
-            "Auth"
-          ],
-          "summary": "로그아웃",
-          "description": "현재 Access Token에 연결된 refresh 세션을 무효화합니다.",
-          "operationId": "logout",
-          "responses": {
-            "200": {
-              "description": "OK"
-            }
-          },
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ]
-        }
-      },
-      "/api/auth/login": {
-        "post": {
-          "tags": [
-            "Auth"
-          ],
-          "summary": "로그인",
-          "description": "아이디와 비밀번호가 일치하면 JWT access/refresh 토큰을 반환합니다.",
-          "operationId": "login",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LoginRequest"
-                }
-              }
-            },
-            "required": true
-          },
-          "responses": {
-            "200": {
-              "description": "로그인 성공",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/AuthResponse"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "아이디 또는 비밀번호 불일치",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/articles": {
-        "get": {
-          "tags": [
-            "Articles"
-          ],
-          "summary": "글 목록 조회",
-          "description": "글 목록을 페이지 단위로 조회합니다. 페이지 번호는 1부터 시작하며 size는 최대 10입니다.",
-          "operationId": "findAllArticles",
-          "parameters": [
-            {
-              "name": "page",
-              "in": "query",
-              "description": "조회할 페이지 번호. 1부터 시작합니다.",
-              "required": false,
-              "schema": {
-                "type": "integer",
-                "format": "int32",
-                "default": 1
-              },
-              "example": 1
-            },
-            {
-              "name": "size",
-              "in": "query",
-              "description": "페이지 크기. 최대 10입니다.",
-              "required": false,
-              "schema": {
-                "type": "integer",
-                "format": "int32",
-                "default": 10
-              },
-              "example": 10
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "조회 성공",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ArticlePageResponse"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "잘못된 page 또는 size",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            }
+          "title": {
+            "description": "글 제목",
+            "example": "Spring Boot에서 Swagger UI 붙이기",
+            "type": "string"
           }
         },
-        "post": {
-          "tags": [
-            "Articles"
-          ],
-          "summary": "글 작성",
-          "description": "로그인한 사용자가 새 글을 작성합니다. 작성자 정보는 현재 로그인한 사용자 기준으로 서버에서 기록됩니다.",
-          "operationId": "addArticle",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AddArticleRequest"
-                }
-              }
-            },
-            "required": true
-          },
-          "responses": {
-            "201": {
-              "description": "생성 성공",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ArticleResponse"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "입력값 오류",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "로그인 필요",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            }
-          },
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ]
-        }
+        "type": "object"
       },
-      "/api/articles/{id}": {
-        "get": {
-          "tags": [
-            "Articles"
-          ],
-          "summary": "글 상세 조회",
-          "description": "글 ID로 특정 글의 상세 내용을 조회합니다.",
-          "operationId": "findArticleById",
-          "parameters": [
-            {
-              "name": "id",
-              "in": "path",
-              "description": "조회할 글 ID",
-              "required": true,
-              "schema": {
-                "type": "integer",
-                "format": "int64"
-              },
-              "example": 12
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "조회 성공",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ArticleResponse"
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "글 없음",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ArticleResponse"
-                  }
-                }
-              }
-            }
+      "AddCommentRequest": {
+        "description": "댓글 작성 요청",
+        "properties": {
+          "content": {
+            "description": "댓글 본문",
+            "example": "Swagger 문서가 정리되어 있어서 API 확인이 훨씬 편해졌네요.",
+            "type": "string"
           }
         },
-        "post": {
-          "tags": [
-            "Articles"
-          ],
-          "summary": "글 수정",
-          "description": "관리자는 모든 글을, 일반 사용자는 본인이 작성한 글만 수정할 수 있습니다.",
-          "operationId": "updateArticle",
-          "parameters": [
-            {
-              "name": "id",
-              "in": "path",
-              "description": "수정할 글 ID",
-              "required": true,
-              "schema": {
-                "type": "integer",
-                "format": "int64"
-              },
-              "example": 12
-            }
-          ],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UpdateArticleRequest"
-                }
-              }
-            },
-            "required": true
-          },
-          "responses": {
-            "200": {
-              "description": "수정 성공",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ArticleResponse"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "입력값 오류",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "로그인 필요",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "403": {
-              "description": "권한 없음",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "글 없음",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            }
-          },
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ]
-        },
-        "delete": {
-          "tags": [
-            "Articles"
-          ],
-          "summary": "글 삭제",
-          "description": "관리자는 모든 글을, 일반 사용자는 본인이 작성한 글만 삭제할 수 있습니다. 글에 속한 댓글도 함께 삭제됩니다.",
-          "operationId": "deleteArticle",
-          "parameters": [
-            {
-              "name": "id",
-              "in": "path",
-              "description": "삭제할 글 ID",
-              "required": true,
-              "schema": {
-                "type": "integer",
-                "format": "int64"
-              },
-              "example": 12
-            }
-          ],
-          "responses": {
-            "204": {
-              "description": "삭제 성공"
-            },
-            "401": {
-              "description": "로그인 필요",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "403": {
-              "description": "권한 없음",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "글 없음",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            }
-          },
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ]
-        }
+        "type": "object"
       },
-      "/api/articles/{articleId}/comments": {
-        "get": {
-          "tags": [
-            "Comments"
-          ],
-          "summary": "댓글 목록 조회",
-          "description": "특정 글에 속한 댓글 목록을 최신순으로 조회합니다.",
-          "operationId": "findComments",
-          "parameters": [
-            {
-              "name": "articleId",
-              "in": "path",
-              "description": "댓글 목록을 조회할 글 ID",
-              "required": true,
-              "schema": {
-                "type": "integer",
-                "format": "int64"
-              },
-              "example": 12
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "조회 성공",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/CommentResponse"
-                    }
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "글 없음",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            }
+      "AdminUpdateUserRequest": {
+        "description": "관리자용 일반 계정 수정 요청",
+        "properties": {
+          "nickname": {
+            "description": "변경할 닉네임",
+            "example": "수정된회원",
+            "type": "string"
+          },
+          "password": {
+            "description": "변경할 비밀번호. 비워두면 기존 비밀번호를 유지합니다.",
+            "example": "updated123",
+            "type": "string"
           }
         },
-        "post": {
-          "tags": [
-            "Comments"
-          ],
-          "summary": "댓글 작성",
-          "description": "로그인한 사용자가 특정 글에 댓글을 작성합니다.",
-          "operationId": "addComment",
-          "parameters": [
-            {
-              "name": "articleId",
-              "in": "path",
-              "description": "댓글을 작성할 글 ID",
-              "required": true,
-              "schema": {
-                "type": "integer",
-                "format": "int64"
-              },
-              "example": 12
-            }
-          ],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AddCommentRequest"
-                }
-              }
-            },
-            "required": true
-          },
-          "responses": {
-            "201": {
-              "description": "작성 성공",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/CommentResponse"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "입력값 오류",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "로그인 필요",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "글 없음",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            }
-          },
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ]
-        }
+        "type": "object"
       },
-      "/api/admin/users": {
-        "get": {
-          "tags": [
-            "Admin Users"
-          ],
-          "summary": "전체 계정 조회",
-          "description": "관리자가 모든 계정 정보를 조회합니다. 관리자/일반 사용자 모두 포함됩니다.",
-          "operationId": "findUsers",
-          "responses": {
-            "200": {
-              "description": "조회 성공",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/UserProfileResponse"
-                    }
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "로그인 필요",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "403": {
-              "description": "관리자 권한 필요",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            }
+      "AdminUpsertUserRequest": {
+        "description": "관리자용 일반 계정 생성 요청",
+        "properties": {
+          "email": {
+            "description": "생성할 일반 사용자 이메일",
+            "example": "member01@example.com",
+            "type": "string"
           },
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ]
-        },
-        "post": {
-          "tags": [
-            "Admin Users"
-          ],
-          "summary": "일반 계정 생성",
-          "description": "관리자가 일반 사용자 계정을 생성합니다. 관리자 계정은 이 API로 생성하지 않습니다.",
-          "operationId": "createUser",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdminUpsertUserRequest"
-                }
-              }
-            },
-            "required": true
+          "nickname": {
+            "description": "생성할 일반 사용자 닉네임",
+            "example": "일반회원",
+            "type": "string"
           },
-          "responses": {
-            "200": {
-              "description": "생성 성공",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/UserProfileResponse"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "입력값 오류 또는 중복 아이디",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "로그인 필요",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "403": {
-              "description": "관리자 권한 필요",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            }
+          "password": {
+            "description": "생성할 일반 사용자 비밀번호",
+            "example": "member123",
+            "type": "string"
           },
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ]
-        }
-      },
-      "/api/admin/users/{id}": {
-        "post": {
-          "tags": [
-            "Admin Users"
-          ],
-          "summary": "일반 계정 수정",
-          "description": "관리자가 일반 사용자 계정의 닉네임 또는 비밀번호를 수정합니다.",
-          "operationId": "updateUser",
-          "parameters": [
-            {
-              "name": "id",
-              "in": "path",
-              "description": "수정할 일반 사용자 ID",
-              "required": true,
-              "schema": {
-                "type": "integer",
-                "format": "int64"
-              },
-              "example": 3
-            }
-          ],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdminUpdateUserRequest"
-                }
-              }
-            },
-            "required": true
-          },
-          "responses": {
-            "200": {
-              "description": "수정 성공",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/UserProfileResponse"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "입력값 오류",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "로그인 필요",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "403": {
-              "description": "관리자 권한 필요 또는 관리자 계정 수정 시도",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "사용자 없음",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            }
-          },
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ]
-        },
-        "delete": {
-          "tags": [
-            "Admin Users"
-          ],
-          "summary": "일반 계정 삭제",
-          "description": "관리자가 일반 사용자 계정을 삭제합니다. 해당 사용자가 작성한 글, 댓글, 세션도 함께 제거됩니다.",
-          "operationId": "deleteUser",
-          "parameters": [
-            {
-              "name": "id",
-              "in": "path",
-              "description": "삭제할 일반 사용자 ID",
-              "required": true,
-              "schema": {
-                "type": "integer",
-                "format": "int64"
-              },
-              "example": 3
-            }
-          ],
-          "responses": {
-            "204": {
-              "description": "삭제 성공"
-            },
-            "401": {
-              "description": "로그인 필요",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "403": {
-              "description": "관리자 권한 필요 또는 관리자 계정 삭제 시도",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "사용자 없음",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            }
-          },
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ]
-        }
-      },
-      "/api/auth/me": {
-        "get": {
-          "tags": [
-            "Auth"
-          ],
-          "summary": "현재 로그인 사용자 조회",
-          "description": "Access Token으로 현재 로그인한 사용자의 프로필 정보를 조회합니다.",
-          "operationId": "me",
-          "responses": {
-            "200": {
-              "description": "OK",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/UserProfileResponse"
-                  }
-                }
-              }
-            }
-          },
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ]
-        }
-      },
-      "/api/articles/search": {
-        "get": {
-          "tags": [
-            "Articles"
-          ],
-          "summary": "글 검색",
-          "description": "제목, 요약, 본문에서 키워드를 포함하는 글을 페이지 단위로 검색합니다.",
-          "operationId": "searchArticles",
-          "parameters": [
-            {
-              "name": "keyword",
-              "in": "query",
-              "description": "검색 키워드",
-              "required": true,
-              "schema": {
-                "type": "string"
-              },
-              "example": "swagger"
-            },
-            {
-              "name": "page",
-              "in": "query",
-              "description": "조회할 페이지 번호. 1부터 시작합니다.",
-              "required": false,
-              "schema": {
-                "type": "integer",
-                "format": "int32",
-                "default": 1
-              },
-              "example": 1
-            },
-            {
-              "name": "size",
-              "in": "query",
-              "description": "페이지 크기. 최대 10입니다.",
-              "required": false,
-              "schema": {
-                "type": "integer",
-                "format": "int32",
-                "default": 10
-              },
-              "example": 10
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "검색 성공",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ArticlePageResponse"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "잘못된 page 또는 size",
-              "content": {
-                "*/*": {
-                  "schema": {
-                    "$ref": "#/components/schemas/ErrorResponse"
-                  }
-                }
-              }
-            }
+          "username": {
+            "description": "생성할 일반 사용자 아이디",
+            "example": "member01",
+            "type": "string"
           }
-        }
+        },
+        "type": "object"
+      },
+      "ArticlePageResponse": {
+        "description": "글 목록 페이지 응답",
+        "properties": {
+          "content": {
+            "description": "현재 페이지의 글 목록",
+            "items": {
+              "$ref": "#/components/schemas/ArticleResponse"
+            },
+            "type": "array"
+          },
+          "hasNext": {
+            "description": "다음 페이지 존재 여부",
+            "example": true,
+            "type": "boolean"
+          },
+          "hasPrevious": {
+            "description": "이전 페이지 존재 여부",
+            "example": false,
+            "type": "boolean"
+          },
+          "isEmpty": {
+            "type": "boolean"
+          },
+          "isFirst": {
+            "type": "boolean"
+          },
+          "isLast": {
+            "type": "boolean"
+          },
+          "page": {
+            "description": "현재 페이지 번호. 1부터 시작합니다.",
+            "example": 1,
+            "format": "int32",
+            "type": "integer"
+          },
+          "size": {
+            "description": "페이지 크기. 최대 10입니다.",
+            "example": 10,
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "description": "전체 글 개수",
+            "example": 27,
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "description": "전체 페이지 수",
+            "example": 3,
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ArticleResponse": {
+        "description": "글 상세 응답",
+        "properties": {
+          "authorId": {
+            "description": "작성자 계정 ID",
+            "example": 3,
+            "format": "int64",
+            "type": "integer"
+          },
+          "authorNickname": {
+            "description": "작성자 닉네임",
+            "example": "관리자",
+            "type": "string"
+          },
+          "authorRole": {
+            "description": "작성자 권한",
+            "enum": [
+              "ADMIN",
+              "USER"
+            ],
+            "example": "ADMIN",
+            "type": "string"
+          },
+          "content": {
+            "description": "글 본문",
+            "example": "의존성을 추가하고 OpenAPI 설정 클래스를 등록한 뒤 컨트롤러에 문서를 작성합니다.",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "생성 시각",
+            "example": "2026-03-07 22:15:30",
+            "type": "string"
+          },
+          "id": {
+            "description": "글 ID",
+            "example": 12,
+            "format": "int64",
+            "type": "integer"
+          },
+          "summary": {
+            "description": "글 요약",
+            "example": "springdoc-openapi를 적용해 Swagger UI를 노출하는 방법을 정리합니다.",
+            "type": "string"
+          },
+          "title": {
+            "description": "글 제목",
+            "example": "Spring Boot에서 Swagger UI 붙이기",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "마지막 수정 시각",
+            "example": "2026-03-07 22:30:45",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AuthResponse": {
+        "description": "인증 성공 응답",
+        "properties": {
+          "accessToken": {
+            "description": "이후 보호된 API 호출에 사용할 Access Token",
+            "example": "eyJhbGciOiJIUzI1NiJ9...",
+            "type": "string"
+          },
+          "accessTokenExpiresAt": {
+            "description": "Access Token 만료 시각",
+            "example": "2026-03-29 12:30:00",
+            "type": "string"
+          },
+          "refreshToken": {
+            "description": "액세스 토큰 갱신에 사용할 Refresh Token",
+            "example": "eyJhbGciOiJIUzI1NiJ9...",
+            "type": "string"
+          },
+          "refreshTokenExpiresAt": {
+            "description": "Refresh Token 만료 시각",
+            "example": "2026-04-12 12:00:00",
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserProfileResponse",
+            "description": "로그인된 사용자 정보"
+          }
+        },
+        "type": "object"
+      },
+      "CommentResponse": {
+        "description": "댓글 응답",
+        "properties": {
+          "articleId": {
+            "description": "댓글이 속한 글 ID",
+            "example": 12,
+            "format": "int64",
+            "type": "integer"
+          },
+          "authorId": {
+            "description": "작성자 계정 ID",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "authorNickname": {
+            "description": "작성자 닉네임",
+            "example": "관리자",
+            "type": "string"
+          },
+          "authorRole": {
+            "description": "작성자 권한",
+            "enum": [
+              "ADMIN",
+              "USER"
+            ],
+            "example": "ADMIN",
+            "type": "string"
+          },
+          "content": {
+            "description": "댓글 본문",
+            "example": "Swagger UI 링크까지 헤더에 추가되면 더 좋겠습니다.",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "생성 시각",
+            "example": "2026-03-07 22:15:30",
+            "type": "string"
+          },
+          "id": {
+            "description": "댓글 ID",
+            "example": 5,
+            "format": "int64",
+            "type": "integer"
+          },
+          "updatedAt": {
+            "description": "마지막 수정 시각",
+            "example": "2026-03-07 22:30:45",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ErrorResponse": {
+        "description": "에러 응답",
+        "properties": {
+          "message": {
+            "description": "에러 메시지",
+            "example": "로그인이 필요합니다.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "LoginRequest": {
+        "description": "로그인 요청",
+        "properties": {
+          "password": {
+            "description": "비밀번호",
+            "example": "admin",
+            "type": "string"
+          },
+          "username": {
+            "description": "로그인 아이디",
+            "example": "admin",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RefreshTokenRequest": {
+        "description": "토큰 갱신 요청",
+        "properties": {
+          "refreshToken": {
+            "description": "재발급에 사용할 Refresh Token",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RegisterRequest": {
+        "description": "회원 가입 요청",
+        "properties": {
+          "email": {
+            "description": "이메일 주소",
+            "example": "developer01@example.com",
+            "type": "string"
+          },
+          "nickname": {
+            "description": "닉네임",
+            "example": "개발자",
+            "type": "string"
+          },
+          "password": {
+            "description": "비밀번호. 6자 이상이어야 합니다.",
+            "example": "secret123",
+            "type": "string"
+          },
+          "passwordConfirm": {
+            "description": "비밀번호 확인",
+            "example": "secret123",
+            "type": "string"
+          },
+          "username": {
+            "description": "로그인 아이디",
+            "example": "developer01",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateArticleRequest": {
+        "description": "기존 글 수정 요청",
+        "properties": {
+          "content": {
+            "description": "수정할 글 본문",
+            "example": "Operation, ApiResponse, Schema를 함께 사용하면 명세가 더 명확해집니다.",
+            "type": "string"
+          },
+          "summary": {
+            "description": "수정할 글 요약. 비워둘 수 있는 선택 입력값입니다.",
+            "example": "Swagger UI 링크를 프론트 헤더에 연결하는 방법까지 포함합니다.",
+            "type": "string"
+          },
+          "title": {
+            "description": "수정할 글 제목",
+            "example": "Spring Boot에서 Swagger UI 상세 적용",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateCommentRequest": {
+        "description": "댓글 수정 요청",
+        "properties": {
+          "content": {
+            "description": "수정할 댓글 본문",
+            "example": "Swagger UI 링크까지 헤더에 추가되면 더 좋겠습니다.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateMyProfileRequest": {
+        "description": "내 계정 정보 수정 요청",
+        "properties": {
+          "email": {
+            "description": "변경할 이메일",
+            "example": "member@example.com",
+            "type": "string"
+          },
+          "nickname": {
+            "description": "변경할 닉네임",
+            "example": "새닉네임",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UserProfileResponse": {
+        "description": "회원 프로필 응답",
+        "properties": {
+          "createdAt": {
+            "description": "가입 시각",
+            "example": "2026-03-07 22:15:30",
+            "type": "string"
+          },
+          "email": {
+            "description": "이메일 주소",
+            "example": "admin@example.com",
+            "type": "string"
+          },
+          "emailVerified": {
+            "description": "이메일 확인 상태. 현재 서비스 정책상 가입 시 즉시 true 입니다.",
+            "example": true,
+            "type": "boolean"
+          },
+          "id": {
+            "description": "회원 ID",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "nickname": {
+            "description": "회원 닉네임",
+            "example": "관리자",
+            "type": "string"
+          },
+          "role": {
+            "description": "회원 권한",
+            "enum": [
+              "ADMIN",
+              "USER"
+            ],
+            "example": "ADMIN",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "마지막 수정 시각",
+            "example": "2026-03-07 22:30:45",
+            "type": "string"
+          },
+          "username": {
+            "description": "회원 아이디",
+            "example": "admin",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "VisitorStatsResponse": {
+        "description": "방문자 집계 응답",
+        "properties": {
+          "todayVisitors": {
+            "description": "오늘 방문자 수",
+            "example": 42,
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalVisitors": {
+            "description": "누적 방문자 수",
+            "example": 1387,
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
       }
     },
-    "components": {
-      "schemas": {
-        "VisitorStatsResponse": {
-          "type": "object",
-          "description": "방문자 집계 응답",
-          "properties": {
-            "todayVisitors": {
-              "type": "integer",
-              "format": "int64",
-              "description": "오늘 방문자 수",
-              "example": 42
-            },
-            "totalVisitors": {
-              "type": "integer",
-              "format": "int64",
-              "description": "누적 방문자 수",
-              "example": 1387
-            }
-          }
-        },
-        "UpdateMyProfileRequest": {
-          "type": "object",
-          "description": "내 계정 정보 수정 요청",
-          "properties": {
-            "email": {
-              "type": "string",
-              "description": "변경할 이메일",
-              "example": "member@example.com"
-            },
-            "nickname": {
-              "type": "string",
-              "description": "변경할 닉네임",
-              "example": "새닉네임"
-            }
-          }
-        },
-        "UserProfileResponse": {
-          "type": "object",
-          "description": "회원 프로필 응답",
-          "properties": {
-            "id": {
-              "type": "integer",
-              "format": "int64",
-              "description": "회원 ID",
-              "example": 1
-            },
-            "username": {
-              "type": "string",
-              "description": "회원 아이디",
-              "example": "admin"
-            },
-            "email": {
-              "type": "string",
-              "description": "이메일 주소",
-              "example": "admin@example.com"
-            },
-            "emailVerified": {
-              "type": "boolean",
-              "description": "이메일 확인 상태. 현재 서비스 정책상 가입 시 즉시 true 입니다.",
-              "example": true
-            },
-            "nickname": {
-              "type": "string",
-              "description": "회원 닉네임",
-              "example": "관리자"
-            },
-            "role": {
-              "type": "string",
-              "description": "회원 권한",
-              "enum": [
-                "ADMIN",
-                "USER"
-              ],
-              "example": "ADMIN"
-            },
-            "createdAt": {
-              "type": "string",
-              "description": "가입 시각",
-              "example": "2026-03-07 22:15:30"
-            },
-            "updatedAt": {
-              "type": "string",
-              "description": "마지막 수정 시각",
-              "example": "2026-03-07 22:30:45"
-            }
-          }
-        },
-        "ErrorResponse": {
-          "type": "object",
-          "description": "에러 응답",
-          "properties": {
-            "message": {
-              "type": "string",
-              "description": "에러 메시지",
-              "example": "로그인이 필요합니다."
-            }
-          }
-        },
-        "UpdateCommentRequest": {
-          "type": "object",
-          "description": "댓글 수정 요청",
-          "properties": {
-            "content": {
-              "type": "string",
-              "description": "수정할 댓글 본문",
-              "example": "Swagger UI 링크까지 헤더에 추가되면 더 좋겠습니다."
-            }
-          }
-        },
-        "CommentResponse": {
-          "type": "object",
-          "description": "댓글 응답",
-          "properties": {
-            "id": {
-              "type": "integer",
-              "format": "int64",
-              "description": "댓글 ID",
-              "example": 5
-            },
-            "articleId": {
-              "type": "integer",
-              "format": "int64",
-              "description": "댓글이 속한 글 ID",
-              "example": 12
-            },
-            "authorId": {
-              "type": "integer",
-              "format": "int64",
-              "description": "작성자 계정 ID",
-              "example": 1
-            },
-            "authorNickname": {
-              "type": "string",
-              "description": "작성자 닉네임",
-              "example": "관리자"
-            },
-            "authorRole": {
-              "type": "string",
-              "description": "작성자 권한",
-              "enum": [
-                "ADMIN",
-                "USER"
-              ],
-              "example": "ADMIN"
-            },
-            "content": {
-              "type": "string",
-              "description": "댓글 본문",
-              "example": "Swagger UI 링크까지 헤더에 추가되면 더 좋겠습니다."
-            },
-            "createdAt": {
-              "type": "string",
-              "description": "생성 시각",
-              "example": "2026-03-07 22:15:30"
-            },
-            "updatedAt": {
-              "type": "string",
-              "description": "마지막 수정 시각",
-              "example": "2026-03-07 22:30:45"
-            }
-          }
-        },
-        "RegisterRequest": {
-          "type": "object",
-          "description": "회원 가입 요청",
-          "properties": {
-            "username": {
-              "type": "string",
-              "description": "로그인 아이디",
-              "example": "developer01"
-            },
-            "email": {
-              "type": "string",
-              "description": "이메일 주소",
-              "example": "developer01@example.com"
-            },
-            "password": {
-              "type": "string",
-              "description": "비밀번호. 6자 이상이어야 합니다.",
-              "example": "secret123"
-            },
-            "passwordConfirm": {
-              "type": "string",
-              "description": "비밀번호 확인",
-              "example": "secret123"
-            },
-            "nickname": {
-              "type": "string",
-              "description": "닉네임",
-              "example": "개발자"
-            }
-          }
-        },
-        "AuthResponse": {
-          "type": "object",
-          "description": "인증 성공 응답",
-          "properties": {
-            "accessToken": {
-              "type": "string",
-              "description": "이후 보호된 API 호출에 사용할 Access Token",
-              "example": "eyJhbGciOiJIUzI1NiJ9..."
-            },
-            "refreshToken": {
-              "type": "string",
-              "description": "액세스 토큰 갱신에 사용할 Refresh Token",
-              "example": "eyJhbGciOiJIUzI1NiJ9..."
-            },
-            "accessTokenExpiresAt": {
-              "type": "string",
-              "description": "Access Token 만료 시각",
-              "example": "2026-03-29 12:30:00"
-            },
-            "refreshTokenExpiresAt": {
-              "type": "string",
-              "description": "Refresh Token 만료 시각",
-              "example": "2026-04-12 12:00:00"
-            },
-            "user": {
-              "$ref": "#/components/schemas/UserProfileResponse",
-              "description": "로그인된 사용자 정보"
-            }
-          }
-        },
-        "RefreshTokenRequest": {
-          "type": "object",
-          "description": "토큰 갱신 요청",
-          "properties": {
-            "refreshToken": {
-              "type": "string",
-              "description": "재발급에 사용할 Refresh Token"
-            }
-          }
-        },
-        "LoginRequest": {
-          "type": "object",
-          "description": "로그인 요청",
-          "properties": {
-            "username": {
-              "type": "string",
-              "description": "로그인 아이디",
-              "example": "admin"
-            },
-            "password": {
-              "type": "string",
-              "description": "비밀번호",
-              "example": "admin"
-            }
-          }
-        },
-        "AddArticleRequest": {
-          "type": "object",
-          "description": "새 글 작성 요청",
-          "properties": {
-            "title": {
-              "type": "string",
-              "description": "글 제목",
-              "example": "Spring Boot에서 Swagger UI 붙이기"
-            },
-            "summary": {
-              "type": "string",
-              "description": "글 요약. 비워둘 수 있는 선택 입력값입니다.",
-              "example": "springdoc-openapi를 적용해 Swagger UI를 노출하는 방법을 정리합니다."
-            },
-            "content": {
-              "type": "string",
-              "description": "글 본문",
-              "example": "의존성을 추가하고 OpenAPI 설정 클래스를 등록한 뒤 컨트롤러에 문서를 작성합니다."
-            }
-          }
-        },
-        "ArticleResponse": {
-          "type": "object",
-          "description": "글 상세 응답",
-          "properties": {
-            "id": {
-              "type": "integer",
-              "format": "int64",
-              "description": "글 ID",
-              "example": 12
-            },
-            "authorId": {
-              "type": "integer",
-              "format": "int64",
-              "description": "작성자 계정 ID",
-              "example": 3
-            },
-            "authorNickname": {
-              "type": "string",
-              "description": "작성자 닉네임",
-              "example": "관리자"
-            },
-            "authorRole": {
-              "type": "string",
-              "description": "작성자 권한",
-              "enum": [
-                "ADMIN",
-                "USER"
-              ],
-              "example": "ADMIN"
-            },
-            "title": {
-              "type": "string",
-              "description": "글 제목",
-              "example": "Spring Boot에서 Swagger UI 붙이기"
-            },
-            "summary": {
-              "type": "string",
-              "description": "글 요약",
-              "example": "springdoc-openapi를 적용해 Swagger UI를 노출하는 방법을 정리합니다."
-            },
-            "content": {
-              "type": "string",
-              "description": "글 본문",
-              "example": "의존성을 추가하고 OpenAPI 설정 클래스를 등록한 뒤 컨트롤러에 문서를 작성합니다."
-            },
-            "createdAt": {
-              "type": "string",
-              "description": "생성 시각",
-              "example": "2026-03-07 22:15:30"
-            },
-            "updatedAt": {
-              "type": "string",
-              "description": "마지막 수정 시각",
-              "example": "2026-03-07 22:30:45"
-            }
-          }
-        },
-        "UpdateArticleRequest": {
-          "type": "object",
-          "description": "기존 글 수정 요청",
-          "properties": {
-            "title": {
-              "type": "string",
-              "description": "수정할 글 제목",
-              "example": "Spring Boot에서 Swagger UI 상세 적용"
-            },
-            "summary": {
-              "type": "string",
-              "description": "수정할 글 요약. 비워둘 수 있는 선택 입력값입니다.",
-              "example": "Swagger UI 링크를 프론트 헤더에 연결하는 방법까지 포함합니다."
-            },
-            "content": {
-              "type": "string",
-              "description": "수정할 글 본문",
-              "example": "Operation, ApiResponse, Schema를 함께 사용하면 명세가 더 명확해집니다."
-            }
-          }
-        },
-        "AddCommentRequest": {
-          "type": "object",
-          "description": "댓글 작성 요청",
-          "properties": {
-            "content": {
-              "type": "string",
-              "description": "댓글 본문",
-              "example": "Swagger 문서가 정리되어 있어서 API 확인이 훨씬 편해졌네요."
-            }
-          }
-        },
-        "AdminUpsertUserRequest": {
-          "type": "object",
-          "description": "관리자용 일반 계정 생성 요청",
-          "properties": {
-            "username": {
-              "type": "string",
-              "description": "생성할 일반 사용자 아이디",
-              "example": "member01"
-            },
-            "email": {
-              "type": "string",
-              "description": "생성할 일반 사용자 이메일",
-              "example": "member01@example.com"
-            },
-            "password": {
-              "type": "string",
-              "description": "생성할 일반 사용자 비밀번호",
-              "example": "member123"
-            },
-            "nickname": {
-              "type": "string",
-              "description": "생성할 일반 사용자 닉네임",
-              "example": "일반회원"
-            }
-          }
-        },
-        "AdminUpdateUserRequest": {
-          "type": "object",
-          "description": "관리자용 일반 계정 수정 요청",
-          "properties": {
-            "password": {
-              "type": "string",
-              "description": "변경할 비밀번호. 비워두면 기존 비밀번호를 유지합니다.",
-              "example": "updated123"
-            },
-            "nickname": {
-              "type": "string",
-              "description": "변경할 닉네임",
-              "example": "수정된회원"
-            }
-          }
-        },
-        "ArticlePageResponse": {
-          "type": "object",
-          "description": "글 목록 페이지 응답",
-          "properties": {
-            "isFirst": {
-              "type": "boolean"
-            },
-            "isLast": {
-              "type": "boolean"
-            },
-            "isEmpty": {
-              "type": "boolean"
-            },
-            "content": {
-              "type": "array",
-              "description": "현재 페이지의 글 목록",
-              "items": {
-                "$ref": "#/components/schemas/ArticleResponse"
-              }
-            },
-            "page": {
-              "type": "integer",
-              "format": "int32",
-              "description": "현재 페이지 번호. 1부터 시작합니다.",
-              "example": 1
-            },
-            "size": {
-              "type": "integer",
-              "format": "int32",
-              "description": "페이지 크기. 최대 10입니다.",
-              "example": 10
-            },
-            "totalElements": {
-              "type": "integer",
-              "format": "int64",
-              "description": "전체 글 개수",
-              "example": 27
-            },
-            "totalPages": {
-              "type": "integer",
-              "format": "int32",
-              "description": "전체 페이지 수",
-              "example": 3
-            },
-            "hasNext": {
-              "type": "boolean",
-              "description": "다음 페이지 존재 여부",
-              "example": true
-            },
-            "hasPrevious": {
-              "type": "boolean",
-              "description": "이전 페이지 존재 여부",
-              "example": false
-            }
-          }
-        }
-      },
-      "securitySchemes": {
-        "bearerAuth": {
-          "type": "http",
-          "description": "로그인 또는 토큰 갱신 후 받은 access token을 `Bearer {token}` 형식으로 전달합니다.",
-          "in": "header",
-          "scheme": "bearer",
-          "bearerFormat": "JWT"
-        }
+    "securitySchemes": {
+      "bearerAuth": {
+        "bearerFormat": "JWT",
+        "description": "로그인 또는 토큰 갱신 후 받은 access token을 `Bearer {token}` 형식으로 전달합니다.",
+        "in": "header",
+        "scheme": "bearer",
+        "type": "http"
       }
     }
-  }
-  
+  },
+  "info": {
+    "contact": {
+      "name": "WM Blog",
+      "url": "http://101.79.9.203"
+    },
+    "description": "개인 블로그 서비스 API 문서입니다. 공개 조회 API와 인증이 필요한 글/댓글/회원 관리 API를 포함합니다.",
+    "license": {
+      "name": "Internal Use"
+    },
+    "title": "WM Blog API",
+    "version": "1.0.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/admin/users": {
+      "get": {
+        "description": "관리자가 모든 계정 정보를 조회합니다. 관리자/일반 사용자 모두 포함됩니다.",
+        "operationId": "findUsers",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UserProfileResponse"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "조회 성공"
+          },
+          "401": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "로그인 필요"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "관리자 권한 필요"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "전체 계정 조회",
+        "tags": [
+          "Admin Users"
+        ]
+      },
+      "post": {
+        "description": "관리자가 일반 사용자 계정을 생성합니다. 관리자 계정은 이 API로 생성하지 않습니다.",
+        "operationId": "createUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpsertUserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                }
+              }
+            },
+            "description": "생성 성공"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "입력값 오류 또는 중복 아이디"
+          },
+          "401": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "로그인 필요"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "관리자 권한 필요"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "일반 계정 생성",
+        "tags": [
+          "Admin Users"
+        ]
+      }
+    },
+    "/api/admin/users/{id}": {
+      "delete": {
+        "description": "관리자가 일반 사용자 계정을 삭제합니다. 해당 사용자가 작성한 글, 댓글, 세션도 함께 제거됩니다.",
+        "operationId": "deleteUser",
+        "parameters": [
+          {
+            "description": "삭제할 일반 사용자 ID",
+            "example": 3,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "삭제 성공"
+          },
+          "401": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "로그인 필요"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "관리자 권한 필요 또는 관리자 계정 삭제 시도"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "사용자 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "일반 계정 삭제",
+        "tags": [
+          "Admin Users"
+        ]
+      },
+      "post": {
+        "description": "관리자가 일반 사용자 계정의 닉네임 또는 비밀번호를 수정합니다.",
+        "operationId": "updateUser",
+        "parameters": [
+          {
+            "description": "수정할 일반 사용자 ID",
+            "example": 3,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateUserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                }
+              }
+            },
+            "description": "수정 성공"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "입력값 오류"
+          },
+          "401": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "로그인 필요"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "관리자 권한 필요 또는 관리자 계정 수정 시도"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "사용자 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "일반 계정 수정",
+        "tags": [
+          "Admin Users"
+        ]
+      }
+    },
+    "/api/articles": {
+      "get": {
+        "description": "글 목록을 페이지 단위로 조회합니다. 페이지 번호는 1부터 시작하며 size는 최대 10입니다.",
+        "operationId": "findAllArticles",
+        "parameters": [
+          {
+            "description": "조회할 페이지 번호. 1부터 시작합니다.",
+            "example": 1,
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "페이지 크기. 최대 10입니다.",
+            "example": 10,
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticlePageResponse"
+                }
+              }
+            },
+            "description": "조회 성공"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "잘못된 page 또는 size"
+          }
+        },
+        "summary": "글 목록 조회",
+        "tags": [
+          "Articles"
+        ]
+      },
+      "post": {
+        "description": "로그인한 사용자가 새 글을 작성합니다. 작성자 정보는 현재 로그인한 사용자 기준으로 서버에서 기록됩니다.",
+        "operationId": "addArticle",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddArticleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleResponse"
+                }
+              }
+            },
+            "description": "생성 성공"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "입력값 오류"
+          },
+          "401": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "로그인 필요"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "글 작성",
+        "tags": [
+          "Articles"
+        ]
+      }
+    },
+    "/api/articles/search": {
+      "get": {
+        "description": "제목, 요약, 본문에서 키워드를 포함하는 글을 페이지 단위로 검색합니다.",
+        "operationId": "searchArticles",
+        "parameters": [
+          {
+            "description": "검색 키워드",
+            "example": "swagger",
+            "in": "query",
+            "name": "keyword",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "조회할 페이지 번호. 1부터 시작합니다.",
+            "example": 1,
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "페이지 크기. 최대 10입니다.",
+            "example": 10,
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticlePageResponse"
+                }
+              }
+            },
+            "description": "검색 성공"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "잘못된 page 또는 size"
+          }
+        },
+        "summary": "글 검색",
+        "tags": [
+          "Articles"
+        ]
+      }
+    },
+    "/api/articles/{articleId}/comments": {
+      "get": {
+        "description": "특정 글에 속한 댓글 목록을 최신순으로 조회합니다.",
+        "operationId": "findComments",
+        "parameters": [
+          {
+            "description": "댓글 목록을 조회할 글 ID",
+            "example": 12,
+            "in": "path",
+            "name": "articleId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CommentResponse"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "조회 성공"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "글 없음"
+          }
+        },
+        "summary": "댓글 목록 조회",
+        "tags": [
+          "Comments"
+        ]
+      },
+      "post": {
+        "description": "로그인한 사용자가 특정 글에 댓글을 작성합니다.",
+        "operationId": "addComment",
+        "parameters": [
+          {
+            "description": "댓글을 작성할 글 ID",
+            "example": 12,
+            "in": "path",
+            "name": "articleId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddCommentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentResponse"
+                }
+              }
+            },
+            "description": "작성 성공"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "입력값 오류"
+          },
+          "401": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "로그인 필요"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "글 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "댓글 작성",
+        "tags": [
+          "Comments"
+        ]
+      }
+    },
+    "/api/articles/{id}": {
+      "delete": {
+        "description": "관리자는 모든 글을, 일반 사용자는 본인이 작성한 글만 삭제할 수 있습니다. 글에 속한 댓글도 함께 삭제됩니다.",
+        "operationId": "deleteArticle",
+        "parameters": [
+          {
+            "description": "삭제할 글 ID",
+            "example": 12,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "삭제 성공"
+          },
+          "401": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "로그인 필요"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "권한 없음"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "글 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "글 삭제",
+        "tags": [
+          "Articles"
+        ]
+      },
+      "get": {
+        "description": "글 ID로 특정 글의 상세 내용을 조회합니다.",
+        "operationId": "findArticleById",
+        "parameters": [
+          {
+            "description": "조회할 글 ID",
+            "example": 12,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleResponse"
+                }
+              }
+            },
+            "description": "조회 성공"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleResponse"
+                }
+              }
+            },
+            "description": "글 없음"
+          }
+        },
+        "summary": "글 상세 조회",
+        "tags": [
+          "Articles"
+        ]
+      },
+      "post": {
+        "description": "관리자는 모든 글을, 일반 사용자는 본인이 작성한 글만 수정할 수 있습니다.",
+        "operationId": "updateArticle",
+        "parameters": [
+          {
+            "description": "수정할 글 ID",
+            "example": 12,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateArticleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleResponse"
+                }
+              }
+            },
+            "description": "수정 성공"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "입력값 오류"
+          },
+          "401": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "로그인 필요"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "권한 없음"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "글 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "글 수정",
+        "tags": [
+          "Articles"
+        ]
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "description": "아이디와 비밀번호가 일치하면 JWT access/refresh 토큰을 반환합니다.",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            },
+            "description": "로그인 성공"
+          },
+          "401": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "아이디 또는 비밀번호 불일치"
+          }
+        },
+        "summary": "로그인",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "description": "현재 Access Token에 연결된 refresh 세션을 무효화합니다.",
+        "operationId": "logout",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "로그아웃",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "description": "Access Token으로 현재 로그인한 사용자의 프로필 정보를 조회합니다.",
+        "operationId": "me",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "현재 로그인 사용자 조회",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "description": "Refresh Token으로 새 access/refresh 토큰 쌍을 재발급합니다.",
+        "operationId": "refresh",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            },
+            "description": "토큰 재발급 성공"
+          },
+          "401": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "유효하지 않은 Refresh Token"
+          }
+        },
+        "summary": "토큰 갱신",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "description": "아이디, 이메일, 비밀번호, 닉네임으로 계정을 만들고 JWT access/refresh 토큰을 발급합니다.",
+        "operationId": "register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            },
+            "description": "회원 가입 성공"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "입력값 오류 또는 중복 계정"
+          }
+        },
+        "summary": "회원 가입",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/comments/{id}": {
+      "delete": {
+        "description": "관리자는 모든 댓글을, 일반 사용자는 본인이 작성한 댓글만 삭제할 수 있습니다.",
+        "operationId": "deleteComment",
+        "parameters": [
+          {
+            "description": "삭제할 댓글 ID",
+            "example": 5,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "삭제 성공"
+          },
+          "401": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "로그인 필요"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "권한 없음"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "댓글 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "댓글 삭제",
+        "tags": [
+          "Comments"
+        ]
+      },
+      "post": {
+        "description": "관리자는 모든 댓글을, 일반 사용자는 본인이 작성한 댓글만 수정할 수 있습니다.",
+        "operationId": "updateComment",
+        "parameters": [
+          {
+            "description": "수정할 댓글 ID",
+            "example": 5,
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCommentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentResponse"
+                }
+              }
+            },
+            "description": "수정 성공"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "입력값 오류"
+          },
+          "401": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "로그인 필요"
+          },
+          "403": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "권한 없음"
+          },
+          "404": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "댓글 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "댓글 수정",
+        "tags": [
+          "Comments"
+        ]
+      }
+    },
+    "/api/users/me": {
+      "delete": {
+        "description": "로그인한 사용자 계정과 본인이 작성한 글, 댓글, 세션을 모두 삭제합니다.",
+        "operationId": "deleteMyProfile",
+        "responses": {
+          "204": {
+            "description": "회원 탈퇴 성공"
+          },
+          "401": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "로그인 필요"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "회원 탈퇴",
+        "tags": [
+          "User"
+        ]
+      },
+      "post": {
+        "description": "로그인한 사용자의 이메일과 닉네임을 수정합니다. 비밀번호 변경은 관리자 기능으로만 처리합니다.",
+        "operationId": "updateMyProfile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMyProfileRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                }
+              }
+            },
+            "description": "수정 성공"
+          },
+          "400": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "입력값 오류"
+          },
+          "401": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "로그인 필요"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "내 정보 수정",
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/api/visitors/track": {
+      "post": {
+        "description": "현재 요청의 IP와 User-Agent를 기준으로 오늘 방문자를 집계하고, 오늘/누적 방문자 수를 반환합니다.",
+        "operationId": "trackVisit",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/VisitorStatsResponse"
+                }
+              }
+            },
+            "description": "집계 성공"
+          }
+        },
+        "summary": "방문자 집계 반영",
+        "tags": [
+          "Visitors"
+        ]
+      }
+    }
+  },
+  "servers": [
+    {
+      "description": "Current origin",
+      "url": "/"
+    }
+  ],
+  "tags": [
+    {
+      "description": "관리자 전용 일반 회원 관리 API",
+      "name": "Admin Users"
+    },
+    {
+      "description": "블로그 글 조회, 검색, 작성, 수정, 삭제 API",
+      "name": "Articles"
+    },
+    {
+      "description": "방문자 집계 API 테스트를 위해 설명 변경합니다.",
+      "name": "Visitors"
+    },
+    {
+      "description": "회원 가입, 로그인, 토큰 갱신 API",
+      "name": "Auth"
+    },
+    {
+      "description": "댓글 조회, 작성, 수정, 삭제 API",
+      "name": "Comments"
+    },
+    {
+      "description": "로그인한 사용자의 내 정보 관리 API",
+      "name": "User"
+    }
+  ]
+}
