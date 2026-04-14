@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   schedule:
     # https://crontab.guru/
-    - cron: '*/2 * * * *'
+    - cron: "*/2 * * * *"
 
 permissions:
   contents: read
