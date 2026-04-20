@@ -25,12 +25,6 @@ jobs:
           od -An -tx1c "$GITHUB_OUTPUT"
           echo "=== debug: 다음 스텝에서 steps.ping.outputs.ok 로 읽힘 ==="
 
-      - name: Debug — 워크플로가 읽는 ok 값
-        run: |
-          echo "steps.ping.outputs.ok=[${{ steps.ping.outputs.ok }}]"
-          echo "== 'true'  -> ${{ steps.ping.outputs.ok == 'true' }}"
-          echo "== 'false' -> ${{ steps.ping.outputs.ok == 'false' }}"
-
       - name: Create issue on failure
         if: ${{ steps.ping.outputs.ok == 'false' }}
         env:
