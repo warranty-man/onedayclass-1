@@ -15,7 +15,7 @@ jobs:
         id: ping
         run: |
           http_status=$(curl -s -o /dev/null -w "%{http_code}" -m 10 http://warranty-man.com)
-          if [ "$http_status" -eq 301 ]; then
+          if [ "$http_status" -ge 200 ] && [ "$http_status" -lt 400 ]; then
             echo "ok=true" >> "$GITHUB_OUTPUT"
           else
             echo "ok=false" >> "$GITHUB_OUTPUT"
