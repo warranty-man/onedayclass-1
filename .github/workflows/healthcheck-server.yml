@@ -23,9 +23,6 @@ jobs:
 
           echo "=== debug: GITHUB_OUTPUT raw ==="
           cat "$GITHUB_OUTPUT"
-          echo "=== debug: 바이트 덤프 (숨은 공백/개행 확인) ==="
-          od -An -tx1c "$GITHUB_OUTPUT"
-          echo "=== debug: 다음 스텝에서 steps.ping.outputs.ok 로 읽힘 ==="
 
       - name: Create issue on failure
         if: ${{ steps.ping.outputs.ok == 'false' }}
