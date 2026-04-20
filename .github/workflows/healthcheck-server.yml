@@ -8,17 +8,19 @@ permissions:
   issues: write
 
 jobs:
-  ping-and-report:
+  health-check:
     runs-on: ubuntu-latest
     steps:
       - name: Ping server
         id: ping
         run: |
-          if ping -c 1 -W warranty-man.com; then
-            echo "ok=true" >> "$GITHUB_OUTPUT"
+          http_status=$(curl -s -o /dev/null -w "%{http_code}" -m 10 http://warranty-man.com)
+          if [ "$http_status" -eq 200 ]; then
+            echo "ok=true"
           else
-            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "ok=false"
           fi
+
           echo "=== debug: GITHUB_OUTPUT raw ==="
           cat "$GITHUB_OUTPUT"
           echo "=== debug: 바이트 덤프 (숨은 공백/개행 확인) ==="
@@ -32,5 +34,5 @@ jobs:
         run: |
           gh issue create \
             --repo "${{ github.repository }}" \
-            --title "서버 응답 없음: 101.79.9.203 (${{ github.run_id }})" \
-            --body "ICMP ping에 실패했습니다.\n\n- IP: \`101.79.9.203\`"
+            --title "서버 응답 없음: http://warranty-man.com (${{ github.run_id }})" \
+            --body "ICMP ping에 실패했습니다.\n\n- URL: \`http://warranty-man.com\`"
