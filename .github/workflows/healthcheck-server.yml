@@ -11,24 +11,35 @@ jobs:
   health-check:
     runs-on: ubuntu-latest
     steps:
+      # 대상 서버에 HTTP 요청을 보내 응답 가능 여부를 확인
       - name: Ping server
         id: ping
         run: |
+          # 서버에 최대 10초 동안 요청하고, 응답 본문은 버린 뒤 HTTP 상태코드만 추출
           http_status=$(curl -s -o /dev/null -w "%{http_code}" -m 10 http://warranty-man.com)
+
+          # 2xx, 3xx 응답이면 정상으로 간주하고 다음 스텝에서 사용할 output 값 기록
           if [ "$http_status" -ge 200 ] && [ "$http_status" -lt 400 ]; then
             echo "ok=true" >> "$GITHUB_OUTPUT"
           else
+            # 그 외 상태코드 또는 요청 실패 상황은 비정상으로 표시
             echo "ok=false" >> "$GITHUB_OUTPUT"
           fi
 
+          # 디버깅용: 현재 step output 파일에 기록된 값을 로그로 출력
           echo "=== debug: GITHUB_OUTPUT raw ==="
           cat "$GITHUB_OUTPUT"
 
+      # 이전 step에서 서버 비정상으로 판단된 경우에만 GitHub Issue 생성
       - name: Create issue on failure
         if: ${{ steps.ping.outputs.ok == 'false' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # GitHub CLI를 사용해 현재 저장소에 장애 감지 이슈 등록
+          # --repo: 이슈를 만들 저장소
+          # --title: 실행 ID를 포함한 이슈 제목
+          # --body: 장애 내용과 확인 대상 URL
           gh issue create \
             --repo "${{ github.repository }}" \
             --title "서버 응답 없음: http://warranty-man.com (${{ github.run_id }})" \

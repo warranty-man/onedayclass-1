@@ -11,37 +11,55 @@ jobs:
   sync-api-docs:
     runs-on: ubuntu-latest
     steps:
+      # 현재 저장소 내용을 워크플로 실행 환경으로 체크아웃
       - uses: actions/checkout@v4
 
+      # 원격 OpenAPI 명세를 내려받아 정규화 후,
+      # 변경이 있을 때만 브랜치 생성, 커밋, PR 생성까지 수행
       - name: Download, normalize, and open PR if changed
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          set -euo pipefail
+          # 원격 OpenAPI 명세를 다운로드해서 임시 파일로 저장
           curl -fsSL "https://warranty-man.com/v3/api-docs" -o /tmp/api-docs-fetched.json
+
+          # JSON 키 순서를 정렬해 비교 가능한 표준 형태로 변환
           jq -S . /tmp/api-docs-fetched.json > /tmp/api-docs-normalized.json
 
-          if [ -f api-docs.json ]; then
-            jq -S . api-docs.json > /tmp/api-docs-repo-sorted.json
-          else
-            printf '%s\n' '{}' > /tmp/api-docs-repo-sorted.json
+          # 기존 파일이 없을 때만 비교 기준으로 빈 JSON({})을 생성
+          if [ ! -f api-docs.json ]; then
+            printf '%s\n' '{}' > api-docs.json
           fi
 
-          if diff -q /tmp/api-docs-normalized.json /tmp/api-docs-repo-sorted.json >/dev/null 2>&1; then
+          # 내려받은 명세와 저장소 기준 파일이 같으면 더 이상 작업하지 않고 종료
+          if diff -q /tmp/api-docs-normalized.json api-docs.json >/dev/null 2>&1; then
             echo "api-docs.json과 동일합니다. 종료합니다."
             exit 0
           fi
 
+          # 변경이 있으면 정규화된 최신 명세로 저장소 파일을 갱신
           cp /tmp/api-docs-normalized.json api-docs.json
 
+          # 이번 워크플로 실행 ID를 포함한 고유 브랜치 이름 생성
           BRANCH="chore/sync-api-docs-${{ github.run_id }}"
+
+          # Git 커밋 작성자 정보를 GitHub Actions 봇 계정으로 설정
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # 새 브랜치를 만들고 갱신된 명세 파일만 스테이징 후 커밋
           git checkout -b "$BRANCH"
           git add api-docs.json
           git commit -m "chore: OpenAPI 명세 동기화 (warranty-man.com/v3/api-docs)"
+
+          # 원격 저장소에 브랜치를 푸시해서 PR 생성 대상 준비
           git push origin "$BRANCH"
 
+          # GitHub CLI로 기본 브랜치 대상 PR 생성
+          # --repo: PR을 만들 저장소
+          # --base: 머지될 대상 브랜치
+          # --head: 방금 푸시한 작업 브랜치
+          # --title / --body: PR 제목과 설명
           gh pr create \
             --repo "${{ github.repository }}" \
             --base "${{ github.ref_name }}" \
