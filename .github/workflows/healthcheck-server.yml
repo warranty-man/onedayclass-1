@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # 대상 서버에 HTTP 요청을 보내 응답 가능 여부를 확인
-      - name: Ping server
-        id: ping
+      - name: curl server
+        id: curl
         run: |
           # 서버에 최대 10초 동안 요청하고, 응답 본문은 버린 뒤 HTTP 상태코드만 추출
           http_status=$(curl -Ls -o /dev/null -w "%{http_code}" -m 10 http://warranty-man.com)
@@ -29,9 +29,10 @@ jobs:
           echo "=== debug: GITHUB_OUTPUT raw ==="
           cat "$GITHUB_OUTPUT"
 
+
       # 이전 step에서 서버 비정상으로 판단된 경우에만 GitHub Issue 생성
       - name: Create issue on failure
-        if: ${{ steps.ping.outputs.ok == 'false' }}
+        if: ${{ steps.curl.outputs.ok == 'false' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -42,4 +43,7 @@ jobs:
           gh issue create \
             --repo "${{ github.repository }}" \
             --title "서버 응답 없음: http://warranty-man.com (${{ github.run_id }})" \
-            --body "ICMP ping에 실패했습니다.\n\n- URL: \`http://warranty-man.com\`"
+            --body "ICMP curl에 실패했습니다.\n\n- URL: \`http://warranty-man.com\`"
+
+
+
