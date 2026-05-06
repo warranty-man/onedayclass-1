@@ -29,7 +29,6 @@ jobs:
           echo "=== debug: GITHUB_OUTPUT raw ==="
           cat "$GITHUB_OUTPUT"
 
-
       # 이전 step에서 서버 비정상으로 판단된 경우에만 GitHub Issue 생성
       - name: Create issue on failure
         if: ${{ steps.curl.outputs.ok == 'false' }}
@@ -44,6 +43,3 @@ jobs:
             --repo "${{ github.repository }}" \
             --title "서버 응답 없음: http://warranty-man.com (${{ github.run_id }})" \
             --body "curl에 실패했습니다.\n\n- URL: \`http://warranty-man.com\`"
-
-
-
