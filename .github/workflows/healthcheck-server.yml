@@ -16,6 +16,7 @@ jobs:
         run: |
           # 서버에 최대 5초 동안 요청하고, 응답 본문은 버린 뒤 HTTP 상태코드만 추출
           http_status=$(curl -Ls -o /dev/null -w "%{http_code}" -m 5 http://warranty-man.com)
+          echo "http_status: $http_status"
 
           # 2xx 응답이면 정상으로 간주하고 다음 스텝에서 사용할 output 값 기록
           if [ "$http_status" -ge 200 ]; then
