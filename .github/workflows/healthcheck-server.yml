@@ -27,6 +27,7 @@ jobs:
 
           # 디버깅용: 현재 step output 파일에 기록된 값을 로그로 출력
           echo "=== debug: GITHUB_OUTPUT raw ==="
+          echo "http_status: $http_status"
           cat "$GITHUB_OUTPUT"
 
       # 이전 step에서 서버 비정상으로 판단된 경우에만 GitHub Issue 생성
